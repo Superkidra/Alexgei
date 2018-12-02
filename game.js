@@ -128,6 +128,7 @@ renderer.domElement.addEventListener("click", function()
 	{
 		if(rc.intersectObject(startButton).length)
 		{
+			State= States.Game;
 			scene.remove(startButton);
 			loadMap();
 		}
