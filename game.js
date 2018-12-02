@@ -96,7 +96,6 @@ function loadMap(mapName)
 	{
 		if(this.i) scene.remove(this.i);
 		this.i= loadingimages.current();
-		console.log(vts(this.i.position));
 		scene.add(this.i);
 	}, 1000);
 	/*
@@ -104,31 +103,48 @@ function loadMap(mapName)
 	xhr.
 	*/
 }
-var p= new Pen("800px Comic Sans MS", "#0000FF", RGBA_CSS(255, 0, 0, 255));
-var startButton= /*p.write(200, 150, 400, 300, "Startu");*/createSprite(200, 150, 400, 300, createText("300px Comic Sans MS", "#0000FF", RGBA_CSS(255, 0, 0, 255), "Start").image);
+var startButton= createSprite(200, 150, 400, 300, createText("300px Comic Sans MS", "#0000FF", RGBA_CSS(255, 0, 0, 255), "Start").image);
 scene.add(startButton);
-// var s1tartButton= createSprite(200, 300, 400, 300, createText("300px Comic Sans MS", "#0000FF", RGBA_CSS(255, 0, 0, 255), "Startug").image);
-// scene.add(s1tartButton);
-// var s2tartButton= createSprite(200, 450, 400, 300, createText("300px Comic Sans MS", "#0000FF", RGBA_CSS(255, 0, 0, 255), "Startug").image);
-// scene.add(s2tartButton);
-// var s1tartButton= createSprite(200, 150, 400, 300, 0x00FF00);
-// scene.add(s1tartButton);
 var States= {Menu: 0, Game: 1};
 var State= States.Menu;
 var ndcMouse= new THREE.Vector2()
+var pointerLocked= false;
+renderer.domElement.requestPointerLock= renderer.domElement.requestPointerLock || renderer.domElement.mozRequestPointerLock;
+document.addEventListener("pointerlockchange", function()
+{
+	if(document.pointerLockElement===renderer.domElement) pointerLocked= true;
+	else pointerLocked= false;
+});
+document.addEventListener("mozpointerlockchange", function()
+{
+	if(document.mozPointerLockElement===renderer.domElement) pointerLocked= true;
+	else pointerLocked= false;
+});
 renderer.domElement.addEventListener("mousemove", function(e)
 {
-	ndcMouse.set((e.clientX/renderer.domElement.width)*2-1,(e.clientY/renderer.domElement.height)*2-1);
+	if(State==States.Menu) ndcMouse.set((e.clientX/renderer.domElement.width)*2-1,(e.clientY/renderer.domElement.height)*2-1);
 });
 renderer.domElement.addEventListener("click", function()
 {
-	var rc= new THREE.Raycaster();
-	rc.setFromCamera(ndcMouse, camera);
+	if(State==States.Game)
+	{
+		if(!pointerLocked)
+		{
+			renderer.domElement.requestPointerLock();
+		}
+	}
 	if(State==States.Menu)
 	{
-		if(rc.intersectObject(startButton).length)
+		var rc= new THREE.Raycaster();
+		rc.setFromCamera(ndcMouse, camera);
+			if(rc.intersectObject(startButton).length)
 		{
 			State= States.Game;
+			if(renderer.domElement.requestFullscreen)
+			{
+				renderer.domElement.requestFullscreen();
+			}
+			renderer.domElement.requestPointerLock();
 			scene.remove(startButton);
 			loadMap();
 		}
