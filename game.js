@@ -52,14 +52,17 @@ function createSprite(posX, posY, sizeX, sizeY, image)
 	square.translate(0.5, 0.5, 0);
 	if(typeof image==="number")
 	{
-		var material= new THREE.MeshBasicMaterial({color: image, side: THREE.DoubleSide});
+		var material= new THREE.MeshBasicMaterial({color: image, side: THREE.BackSide});
 	}
-	else
+	else if(typeof image==="string")
 	{
 		var texture=new THREE.TextureLoader().load(image);
 		texture.flipY= false;
-		var material= new THREE.MeshBasicMaterial({map: texture, side: THREE.DoubleSide});
-		console.log("done");
+		var material= new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide});
+	}
+	else
+	{
+		var material= new THREE.MeshBasicMaterial({map: image, side: THREE.BackSide});
 	}
 	var mesh= new THREE.Mesh(square, material);
 	mesh.scale.set(sizeX, sizeY, 1);
@@ -92,13 +95,13 @@ function loadMap(mapName)
 			p.write(300, 225, 200, 150, "Loading.."),
 			p.write(300, 225, 200, 150, "Loading..."),
 		]);
-	setInterval(function()
+	loadingScreen= setInterval(function()
 	{
 		if(this.i) scene.remove(this.i);
 		this.i= loadingimages.current();
 		scene.add(this.i);
 	}, 1000);
-	/*
+/*
 	xhr= new XMLHttpRequest();
 	xhr.
 	*/
