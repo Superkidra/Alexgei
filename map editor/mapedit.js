@@ -141,7 +141,7 @@ function main()
 			});
 			selector_renderer.domElement.addEventListener("click", function()
 			{
-				selected_tile= (tiles.x*selector.y)+selector.y;
+				selected_tile= (tiles.x*selector.y)+selector.x;
 			});
 			var current_color= 0xFFFFFF;
 			var color_selector= document.getElementById("color_selector");
