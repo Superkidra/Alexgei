@@ -211,7 +211,48 @@ function main()
 	
 				}
 			});
-			map_renderer.domElement.addEventListener("mousedown", function(){mouse.down= true;});
+			map_renderer.domElement.addEventListener("mousedown", function()
+			{
+				mouse.down= true;
+				var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
+				if(document.querySelector('input[name="mode"]:checked').value=="edit")
+				{
+					let prev= map_scene.getObjectByProperty("position", new THREE.Vector3(b.x*16, b.y*16, 0));
+					if(prev)
+					{
+						if(prev.material.name=="dispose") prev.material.dispose();
+						map.remove(prev);
+					}
+					if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
+					else
+					{
+						let t= tiles[selected_tile].clone();
+						t.color.set(current_color);
+						var s= createSprite(b.x*16, b.y*16, 16, 16, t);
+					}
+					s.userData.tile= selected_tile;
+					map_scene.add(s);
+				}
+				else
+				{
+					let v= document.getElementById("value_text").value;
+					let mode= document.querySelector('input[name="mode"]:checked').value;
+					if(mode=="trigger")
+					{
+						if(triggers[b]) triggers[b].push(v);
+						else triggers[b]= [v];
+					}
+					else if(mode=="npc") npcs[b]= v;
+					else if(mode=="item") items[b]= v;
+					else if(mode=="clear")
+					{
+						triggers[b]= undefined;
+						npcs[b]= undefined;
+						items[b]= undefined;
+					}
+					else console.error("How did we get here");
+				}
+			});
 			map_renderer.domElement.addEventListener("mouseup", function(){mouse.down= false;});
 			document.getElementById("save_button").addEventListener("click", function()
 			{
