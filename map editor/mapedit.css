@@ -4,4 +4,16 @@ html, body
 	height: 100%;
 	width: 100%;
 	background-color: #CCCCCC;
+	display: flex;
+}
+#tilesheet
+{
+	color: black;
+}
+#controls
+{
+	display: none;
+	background-color: aqua;
+	height: 100%;
+	color: red;
 }

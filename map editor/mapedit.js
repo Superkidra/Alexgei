@@ -124,8 +124,9 @@ function main()
 			selector_renderer.domElement.width= 16*tiles.x;
 			selector_renderer.domElement.height= 16*tiles.y;
 			selector_renderer.setSize(16*tiles.x, 16*tiles.y);
-			document.getElementById("controls").insertBefore(selector_renderer.domElement, document.getElementById("controls").childNodes[0]);
-			document.getElementById("controls").hidden= false;
+			let controls= document.getElementById("controls");
+			controls.insertBefore(selector_renderer.domElement, controls.childNodes[0]);
+			controls.style.display= "inline-block";
 			var selector_camera= new THREE.OrthographicCamera(0, 256, 0, 256, 1, 1000);
 			selector_camera.position.z= 1;
 			selector_scene.add(selector_camera);
@@ -156,9 +157,8 @@ function main()
 			var map_scene= new THREE.Scene();
 			var map_renderer= new THREE.WebGLRenderer();
 			map_renderer.domElement= document.body.appendChild(map_renderer.domElement);
-			map_renderer.domElement.style.width= "100%";
-			map_renderer.domElement.style.height= "100%";
-			map_renderer.domElement.style.display= "block";
+			map_renderer.domElement.style.display= "inline-block";
+			map_renderer.domElement.style["flex-grow"]= 1;
 			map_renderer.domElement.width= map_renderer.domElement.clientWidth;
 			map_renderer.domElement.height= map_renderer.domElement.clientHeight;
 			map_renderer.setSize(map_renderer.domElement.width, map_renderer.domElement.height)

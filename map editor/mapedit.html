@@ -11,18 +11,18 @@
 
 <body>
 	<div id="tilesheet">
-		Tilesheet file: <input id="tilesheet_file" type="file"><br>
-		Size of tilesheet: <input id="tilesheet_x" type="text">, <input id="tilesheet_y" type="text">
+		<h1>Tilesheet file: <input id="tilesheet_file" type="file"></h1><br>
+		<h1>Size of tilesheet (In tiles): <input id="tilesheet_x" type="text">, <input id="tilesheet_y" type="text"></h1>
 		<button onclick="main()">Submit</button>
 	</div>
 	<div id="controls" hidden>
-		Color: <input type="color" id="color_selector"> 
-		Current Mode: 
-			[ Tile Editor <input name="mode" type="radio" value="edit" checked> ] 
-			[ NPC Placer <input name="mode" type="radio" value="npc"> ] 
-			[ Item Placer <input name="mode" type="radio" value="item"> ] 
-			[ Trigger <input name="mode" type="radio" value="trigger"> ] 
-			[ Clear all <input name="mode" type="radio" value="clear"> ]
+		<br>Color: <input type="color" value="#FFFFFF" id="color_selector"> <button onclick="document.getElementById('color_selector').value='#FFFFFF';">Clear color</button><br>
+		<b>Mode: </b><br>
+			[ Tile Editor <input name="mode" type="radio" value="edit" checked> ] <br>
+			[ NPC Placer <input name="mode" type="radio" value="npc"> ] <br>
+			[ Item Placer <input name="mode" type="radio" value="item"> ] <br>
+			[ Trigger <input name="mode" type="radio" value="trigger"> ] <br>
+			[ Clear all <input name="mode" type="radio" value="clear"> ] <br>
 		Value: <input id="value_text">
 	</div>
 </body>
