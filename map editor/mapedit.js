@@ -175,7 +175,7 @@ function main()
 					var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
 					if(document.querySelector('input[name="mode"]:checked').value=="edit")
 					{
-						let prev= map_scene.getObjectByProperty("position", new THREE.Vector3(b.x*16, b.y*16, 1));
+						let prev= map_scene.getObjectByProperty("position", new THREE.Vector3(b.x*16, b.y*16, 0));
 						if(prev)
 						{
 							if(prev.material.name=="dispose") prev.material.dispose();
@@ -188,7 +188,7 @@ function main()
 							t.color.set(current_color);
 							var s= createSprite(b.x*16, b.y*16, 16, 16, t);
 						}
-						console.log(b.x.toString(), b.y.toString(), mouse.x.toString(), mouse.y.toString());
+						s.userData.tile= selected_tile;
 						map_scene.add(s);
 					}
 					else
@@ -215,6 +215,85 @@ function main()
 			});
 			map_renderer.domElement.addEventListener("mousedown", function(){mouse.down= true;});
 			map_renderer.domElement.addEventListener("mouseup", function(){mouse.down= false;});
+			document.getElementById("save_button").addEventListener("click", function()
+			{
+				let totalsize= 40*30*6+6;
+				for(let p in items)
+				{
+					totalsize+= items[p].length*2+2;
+				}
+				for(let p in npcs)
+				{
+					totalsize+= npcs[p].length*2+2;
+				}
+				for(let p in triggers)
+				{
+					totalsize+= triggers[p].length*2+2;
+				}
+				var map_buffer= new ArrayBuffer(totalsize);
+				var map= new DataView(map_buffer);
+				let current_byte= 0;
+				for(let y=0; y<40; y++)
+				{
+					for(let x=0; x<30; x++)
+					{
+						let o= map_scene.getObjectByProperty("positon", new THREE.Vector3(x*16, y*16, 0));
+						map.setUint16(current_byte, o.userData.tile, true);
+						current_byte+= 2;
+						map.setUint8(current_byte, o.material.color.r);
+						current_byte+= 1;
+						map.setUint8(current_byte, o.material.color.g);
+						current_byte+= 1;
+						map.setUint8(current_byte, o.material.color.b);
+						current_byte+= 1;
+					}
+				}
+				for(let p in items)
+				{
+					map.setUint8(current_byte, p.x);
+					current_byte+= 1;
+					map.setUint8(current_byte, p.y);
+					current_byte+= 1;
+					for(let i=0; i<items[p].length; i++)
+					{
+						map.setUint16(current_byte, items[p].charCodeAt(i));
+						current_byte+= 2;
+					}
+				}
+				map.setUint16(current_byte, 0);
+				current_byte+= 2;
+				for(let p in npcs)
+				{
+					map.setUint8(current_byte, p.x);
+					current_byte+= 1;
+					map.setUint8(current_byte, p.y);
+					current_byte+= 1;
+					for(let i=0; i<npcs[p].length; i++)
+					{
+						map.setUint16(current_byte, npcs[p].charCodeAt(i));
+						current_byte+= 2;
+					}
+				}
+				map.setUint16(current_byte, 0);
+				current_byte+= 2;
+				for(let p in triggers)
+				{
+					map.setUint8(current_byte, p.x);
+					current_byte+= 1;
+					map.setUint8(current_byte, p.y);
+					current_byte+= 1;
+					for(let i=0; i<triggers[p].length; i++)
+					{
+						map.setUint16(current_byte, triggers[p].charCodeAt(i));
+						current_byte+= 2;
+					}
+				}
+				let map_blob= new Blob(map_buffer);
+				let map_url= URL.createObjectURL(map_blob);
+				let downloader= document.createElement("a");
+				downloader.href= map_url;
+				downloader.click();
+			});
 			function render()
 			{
 				//Main loop
