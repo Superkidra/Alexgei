@@ -45,7 +45,6 @@ function createText(font, color, fillColor, msg)
 	data= canvas.toDataURL();
 	return {image: data, height: canvas.height, width: canvas.width};
 }
-material = undefined;
 function createSprite(posX, posY, sizeX, sizeY, image)
 {
 	var square= new THREE.PlaneGeometry(1, 1);
@@ -62,7 +61,7 @@ function createSprite(posX, posY, sizeX, sizeY, image)
 	}
 	else
 	{
-		var material= new THREE.MeshBasicMaterial({map: image, side: THREE.BackSide});
+		var material= image;
 	}
 	var mesh= new THREE.Mesh(square, material);
 	mesh.scale.set(sizeX, sizeY, 1);
@@ -84,6 +83,32 @@ function Pen(font, color, fillColor)
 function vts(v)
 {
 	return '('+v.x.toString()+", "+v.y.toString()+", "+v.z.toString()+')';
+}
+function Tilesheet(path, size, cb)
+{
+	var tiles=[];
+	var i= new Image();
+	i.onload= function()
+	{
+		for(let y=0; y<size.y; y++)
+		{
+			for(let x=0; x<size.x; x++)
+			{
+				var c= document.createElement("canvas");
+				c.width= 16;
+				c.height= 16;
+				var ctx= c.getContext("2d");
+				ctx.drawImage(i, x*16, y*16, 16, 16, 0, 0, 16, 16);
+				var t= new THREE.CanvasTexture(c);
+				t.flipY= false;
+				tiles.push(new THREE.MeshBasicMaterial({map: t, side: THREE.BackSide}));
+			}
+		}
+		tiles.x= size.x;
+		tiles.y= size.y;
+		cb(tiles)
+	}
+	i.src= path;
 }
 function loadMap(mapName)
 {

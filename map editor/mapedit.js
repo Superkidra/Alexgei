@@ -36,7 +36,6 @@ function createText(font, color, fillColor, msg)
 	data= canvas.toDataURL();
 	return {image: data, height: canvas.height, width: canvas.width};
 }
-material = undefined;
 function createSprite(posX, posY, sizeX, sizeY, image)
 {
 	var square= new THREE.PlaneGeometry(1, 1);
@@ -54,7 +53,6 @@ function createSprite(posX, posY, sizeX, sizeY, image)
 	else
 	{
 		var material= image;
-		console.log("y");
 	}
 	var mesh= new THREE.Mesh(square, material);
 	mesh.scale.set(sizeX, sizeY, 1);
