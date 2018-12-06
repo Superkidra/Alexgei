@@ -152,7 +152,7 @@ function main()
 			var triggers= {};
 			var npcs= {};
 			var items= {};
-			var map_scene= new THREE.Scene();
+			map_scene= new THREE.Scene();
 			var map_renderer= new THREE.WebGLRenderer();
 			map_renderer.domElement= document.body.appendChild(map_renderer.domElement);
 			map_renderer.domElement.style.display= "inline-block";
@@ -173,11 +173,11 @@ function main()
 					var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
 					if(document.querySelector('input[name="mode"]:checked').value=="edit")
 					{
-						let prev= map_scene.getObjectByProperty("position", new THREE.Vector3(b.x*16, b.y*16, 0));
+					let prev= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(b.x*16, b.y*16, 0))})[0];
 						if(prev)
 						{
 							if(prev.material.name=="dispose") prev.material.dispose();
-							map.remove(prev);
+							map_scene.remove(prev);
 						}
 						if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
 						else
@@ -217,11 +217,11 @@ function main()
 				var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
 				if(document.querySelector('input[name="mode"]:checked').value=="edit")
 				{
-					let prev= map_scene.getObjectByProperty("position", new THREE.Vector3(b.x*16, b.y*16, 0));
+					let prev= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(b.x*16, b.y*16, 0))})[0];
 					if(prev)
 					{
 						if(prev.material.name=="dispose") prev.material.dispose();
-						map.remove(prev);
+						map_scene.remove(prev);
 					}
 					if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
 					else
