@@ -15,7 +15,15 @@
 		Size of tilesheet: <input id="tilesheet_x" type="text">, <input id="tilesheet_y" type="text">
 		<button onclick="main()">Submit</button>
 	</div>
-	<div id="map">
+	<div id="controls" hidden>
+		Color: <input type="color" id="color_selector"> 
+		Current Mode: 
+			[ Tile Editor <input name="mode" type="radio" value="edit" checked> ] 
+			[ NPC Placer <input name="mode" type="radio" value="npc"> ] 
+			[ Item Placer <input name="mode" type="radio" value="item"> ] 
+			[ Trigger <input name="mode" type="radio" value="trigger"> ] 
+			[ Clear all <input name="mode" type="radio" value="clear"> ]
+		Value: <input id="value_text">
 	</div>
 </body>
 

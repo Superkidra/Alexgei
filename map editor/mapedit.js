@@ -124,7 +124,8 @@ function main()
 			selector_renderer.domElement.width= 16*tiles.x;
 			selector_renderer.domElement.height= 16*tiles.y;
 			selector_renderer.setSize(16*tiles.x, 16*tiles.y);
-			document.body.appendChild(selector_renderer.domElement);
+			document.getElementById("controls").insertBefore(selector_renderer.domElement, document.getElementById("controls").childNodes[0]);
+			document.getElementById("controls").hidden= false;
 			var selector_camera= new THREE.OrthographicCamera(0, 256, 0, 256, 1, 1000);
 			selector_camera.position.z= 1;
 			selector_scene.add(selector_camera);
@@ -143,17 +144,15 @@ function main()
 				selected_tile= (tiles.x*selector.y)+selector.y;
 			});
 			var current_color= 0xFFFFFF;
-			var color_selector= document.createElement("input");
-			color_selector.type= "color";
-			color_selector.defaultValue= "#FFFFFF";
+			var color_selector= document.getElementById("color_selector");
 			color_selector.onchange= function(e)
 			{
 				current_color= parseInt(color_selector.value.replace('#', "0x"));
 				selector_picker.material.color.set(current_color);
 			}
-			document.body.appendChild(color_selector);
-			var save_button= document.createElement("button");
-			document.body.appendChild(save_button);
+			var triggers= {};
+			var npcs= {};
+			var items= {};
 			var map_scene= new THREE.Scene();
 			var map_renderer= new THREE.WebGLRenderer();
 			map_renderer.domElement= document.body.appendChild(map_renderer.domElement);
@@ -174,15 +173,43 @@ function main()
 			map_renderer.domElement.addEventListener("click", function()
 			{
 				var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
-				if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
+				if(document.querySelector('input[name="mode"]:checked').value=="edit")
+				{
+					let prev= map_scene.getObjectByProperty("position", new THREE.Vector3(b.x*16, b.y*16, 1));
+					if(prev)
+					{
+						if(prev.material.name=="dispose") prev.material.dispose();
+						map.remove(prev);
+					}
+					if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
+					else
+					{
+						let t= tiles[selected_tile].clone();
+						t.color.set(current_color);
+						var s= createSprite(b.x*16, b.y*16, 16, 16, t);
+					}
+					console.log(b.x.toString(), b.y.toString(), mouse.x.toString(), mouse.y.toString());
+					map_scene.add(s);
+				}
 				else
 				{
-					let t= tiles[selected_tile].clone();
-					t.color.set(current_color);
-					var s= createSprite(b.x*16, b.y*16, 16, 16, t);
+					let v= document.getElementById("value_text").value;
+					let mode= document.querySelector('input[name="mode"]:checked').value;
+					if(mode=="trigger")
+					{
+						if(triggers[b]) triggers[b].push(v);
+						else triggers[b]= [v];
+					}
+					else if(mode=="npc") npcs[b]= v;
+					else if(mode=="item") items[b]= v;
+					else if(mode=="clear")
+					{
+						triggers[b]= undefined;
+						npcs[b]= undefined;
+						items[b]= undefined;
+					}
+					else console.error("How did we get here");
 				}
-				console.log(b.x.toString(), b.y.toString(), mouse.x.toString(), mouse.y.toString());
-				map_scene.add(s);
 			});
 			function render()
 			{
