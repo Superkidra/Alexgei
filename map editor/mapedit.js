@@ -165,52 +165,56 @@ function main()
 			var map_camera= new THREE.OrthographicCamera(0, 640, 0, 480, 1, 1000);
 			map_camera.position.z = 1;
 			map_scene.add(map_camera);
-			var mouse= new THREE.Vector2()
+			var mouse= new THREE.Vector2();
+			mouse.down= false;
 			map_renderer.domElement.addEventListener("mousemove", function(e)
 			{
 				mouse.set(Math.floor((e.offsetX/map_renderer.domElement.width)*640), Math.floor((e.offsetY/map_renderer.domElement.height)*480));
-			});
-			map_renderer.domElement.addEventListener("click", function()
-			{
-				var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
-				if(document.querySelector('input[name="mode"]:checked').value=="edit")
+				if(mouse.down)
 				{
-					let prev= map_scene.getObjectByProperty("position", new THREE.Vector3(b.x*16, b.y*16, 1));
-					if(prev)
+					var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
+					if(document.querySelector('input[name="mode"]:checked').value=="edit")
 					{
-						if(prev.material.name=="dispose") prev.material.dispose();
-						map.remove(prev);
+						let prev= map_scene.getObjectByProperty("position", new THREE.Vector3(b.x*16, b.y*16, 1));
+						if(prev)
+						{
+							if(prev.material.name=="dispose") prev.material.dispose();
+							map.remove(prev);
+						}
+						if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
+						else
+						{
+							let t= tiles[selected_tile].clone();
+							t.color.set(current_color);
+							var s= createSprite(b.x*16, b.y*16, 16, 16, t);
+						}
+						console.log(b.x.toString(), b.y.toString(), mouse.x.toString(), mouse.y.toString());
+						map_scene.add(s);
 					}
-					if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
 					else
 					{
-						let t= tiles[selected_tile].clone();
-						t.color.set(current_color);
-						var s= createSprite(b.x*16, b.y*16, 16, 16, t);
+						let v= document.getElementById("value_text").value;
+						let mode= document.querySelector('input[name="mode"]:checked').value;
+						if(mode=="trigger")
+						{
+							if(triggers[b]) triggers[b].push(v);
+							else triggers[b]= [v];
+						}
+						else if(mode=="npc") npcs[b]= v;
+						else if(mode=="item") items[b]= v;
+						else if(mode=="clear")
+						{
+							triggers[b]= undefined;
+							npcs[b]= undefined;
+							items[b]= undefined;
+						}
+						else console.error("How did we get here");
 					}
-					console.log(b.x.toString(), b.y.toString(), mouse.x.toString(), mouse.y.toString());
-					map_scene.add(s);
-				}
-				else
-				{
-					let v= document.getElementById("value_text").value;
-					let mode= document.querySelector('input[name="mode"]:checked').value;
-					if(mode=="trigger")
-					{
-						if(triggers[b]) triggers[b].push(v);
-						else triggers[b]= [v];
-					}
-					else if(mode=="npc") npcs[b]= v;
-					else if(mode=="item") items[b]= v;
-					else if(mode=="clear")
-					{
-						triggers[b]= undefined;
-						npcs[b]= undefined;
-						items[b]= undefined;
-					}
-					else console.error("How did we get here");
+	
 				}
 			});
+			map_renderer.domElement.addEventListener("mousedown", function(){mouse.down= true;});
+			map_renderer.domElement.addEventListener("mouseup", function(){mouse.down= false;});
 			function render()
 			{
 				//Main loop
