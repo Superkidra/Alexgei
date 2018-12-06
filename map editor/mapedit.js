@@ -97,6 +97,8 @@ function Tilesheet(path, size, cb)
 				tiles.push(new THREE.MeshBasicMaterial({map: t, side: THREE.BackSide}));
 			}
 		}
+		tiles.x= size.x;
+		tiles.y= size.y;
 		cb(tiles)
 	}
 	i.src= path;
@@ -115,52 +117,78 @@ function main()
 		{
 			let form= document.getElementById("tilesheet");
 			form.parentNode.removeChild(form);
-			// var selector_scene= new THREE.Scene();
-			// var selector_renderer= new THREE.WebGLRenderer()
-			// selector_renderer.domElement.style.width= "256px";
-			// selector_renderer.domElement.style.height= "256px";
-			// selector_renderer.setSize(256, 256);
-			// document.body.appendChild(selector_renderer.domElement);
-			// var selector_camera= new THREE.OrthographicCamera(0, 256, 0, 256, 1, 1000);
-			// selector_camera.position.z= 1;
-			// selector_scene.add(selector_camera);
-			var current_color= 0x000000;
+			var selector_scene= new THREE.Scene();
+			var selector_renderer= new THREE.WebGLRenderer()
+			selector_renderer.domElement.style.width= (16*tiles.x).toString()+'px';
+			selector_renderer.domElement.style.height= (16*tiles.y).toString()+'px';
+			selector_renderer.domElement.width= 16*tiles.x;
+			selector_renderer.domElement.height= 16*tiles.y;
+			selector_renderer.setSize(16*tiles.x, 16*tiles.y);
+			document.body.appendChild(selector_renderer.domElement);
+			var selector_camera= new THREE.OrthographicCamera(0, 256, 0, 256, 1, 1000);
+			selector_camera.position.z= 1;
+			selector_scene.add(selector_camera);
+			let t= new THREE.TextureLoader().load(path);
+			t.flipY= false;
+			var selector_picker= createSprite(0, 0, 16*tiles.x, 16*tiles.y, new THREE.MeshBasicMaterial({side: THREE.BackSide, map: t}));
+			selector_scene.add(selector_picker);
+			var selector= new THREE.Vector2(0, 0);
+			var selected_tile= 0;
+			selector_renderer.domElement.addEventListener("mousemove", function(e)
+			{
+				selector.set(Math.floor(e.offsetX/16), Math.floor(e.offsetY/16));
+			});
+			selector_renderer.domElement.addEventListener("click", function()
+			{
+				selected_tile= (tiles.x*selector.y)+selector.y;
+			});
+			var current_color= 0xFFFFFF;
 			var color_selector= document.createElement("input");
 			color_selector.type= "color";
+			color_selector.defaultValue= "#FFFFFF";
 			color_selector.onchange= function(e)
 			{
-				current_color= color_selector.value.replace('#', "0x");
+				current_color= parseInt(color_selector.value.replace('#', "0x"));
+				selector_picker.material.color.set(current_color);
 			}
 			document.body.appendChild(color_selector);
-			document.body.appendChild(document.createElement("br"));
+			var save_button= document.createElement("button");
+			document.body.appendChild(save_button);
 			var map_scene= new THREE.Scene();
 			var map_renderer= new THREE.WebGLRenderer();
+			map_renderer.domElement= document.body.appendChild(map_renderer.domElement);
 			map_renderer.domElement.style.width= "100%";
 			map_renderer.domElement.style.height= "100%";
 			map_renderer.domElement.style.display= "block";
-			map_renderer.setSize(window.innerWidth, window.innerHeight)
-			document.body.appendChild(map_renderer.domElement);
+			map_renderer.domElement.width= map_renderer.domElement.clientWidth;
+			map_renderer.domElement.height= map_renderer.domElement.clientHeight;
+			map_renderer.setSize(map_renderer.domElement.width, map_renderer.domElement.height)
 			var map_camera= new THREE.OrthographicCamera(0, 640, 0, 480, 1, 1000);
 			map_camera.position.z = 1;
 			map_scene.add(map_camera);
 			var mouse= new THREE.Vector2()
 			map_renderer.domElement.addEventListener("mousemove", function(e)
 			{
-				mouse.set(Math.floor((e.clientX/map_renderer.domElement.width)*640), Math.floor((e.clientY/map_renderer.domElement.height)*480));
+				mouse.set(Math.floor((e.offsetX/map_renderer.domElement.width)*640), Math.floor((e.offsetY/map_renderer.domElement.height)*480));
 			});
 			map_renderer.domElement.addEventListener("click", function()
 			{
 				var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
-				var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[1]);
+				if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
+				else
+				{
+					let t= tiles[selected_tile].clone();
+					t.color.set(current_color);
+					var s= createSprite(b.x*16, b.y*16, 16, 16, t);
+				}
 				console.log(b.x.toString(), b.y.toString(), mouse.x.toString(), mouse.y.toString());
-				s.color= current_color;
 				map_scene.add(s);
 			});
 			function render()
 			{
 				//Main loop
 				map_renderer.render(map_scene, map_camera);
-				// selector_renderer.render(selector_scene, selector_camera)
+				selector_renderer.render(selector_scene, selector_camera)
 				requestAnimationFrame(render);
 			}
 			render();
