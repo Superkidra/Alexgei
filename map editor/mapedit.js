@@ -101,6 +101,15 @@ function Tilesheet(path, size, cb)
 	}
 	i.src= path;
 }
+function Point(x, y)
+{
+	this.x=x;
+	this.y=y;
+}
+Point.prototype.toString= function()
+{
+	return '('+this.x.toString()+", "+this.y.toString()+')';
+}
 function main()
 {
 	var fr= new FileReader();
@@ -206,7 +215,15 @@ function main()
 							npcs[b]= undefined;
 							items[b]= undefined;
 						}
-						else console.error("How did we get here");
+						else if(mode=="view")
+						{
+							tv= document.getElementById("tile_view");
+							tv.innerHTML= "<br>Tile: ("+b.x.toString()+", "+b.y.toString()+")<br>"+
+							"NPCs: "+(npcs[b] ? npcs[b].toString() : "None")+"<br>"+
+							"Items: "+(items[b] ? items[b].toString() : "None")+"<br>"+
+							"Triggers: "+(triggers[b] ? triggers[b].toString() : "None")+"<br>";
+						}
+							else console.error("How did we get here");
 					}
 	
 				}
@@ -214,7 +231,7 @@ function main()
 			map_renderer.domElement.addEventListener("mousedown", function()
 			{
 				mouse.down= true;
-				var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
+				var b= new Point(Math.floor(mouse.x/16),  Math.floor(mouse.y/16));
 				if(document.querySelector('input[name="mode"]:checked').value=="edit")
 				{
 					let prev= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(b.x*16, b.y*16, 0))})[0];
@@ -249,6 +266,14 @@ function main()
 						triggers[b]= undefined;
 						npcs[b]= undefined;
 						items[b]= undefined;
+					}
+					else if(mode=="view")
+					{
+						tv= document.getElementById("tile_view");
+						tv.innerHTML= "<br>Tile: ("+b.x.toString()+", "+b.y.toString()+")<br>"+
+						"NPCs: "+(npcs[b] ? npcs[b].toString() : "None")+"<br>"+
+						"Items: "+(items[b] ? items[b].toString() : "None")+"<br>"+
+						"Triggers: "+(triggers[b] ? triggers[b].toString() : "None")+"<br>";
 					}
 					else console.error("How did we get here");
 				}
