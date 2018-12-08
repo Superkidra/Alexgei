@@ -36,23 +36,37 @@ function createText(font, color, fillColor, msg)
 	data= canvas.toDataURL();
 	return {image: data, height: canvas.height, width: canvas.width};
 }
+WhiteTexture= new THREE.TextureLoader().load("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=");
+function BasicMaterial(options)
+{
+	if(!options.color) options.color= 0xFFFFFF;
+	if(!options.map) options.map= WhiteTexture;
+	u= 
+	{
+		color: {type: 'c', value: new THREE.Color(options.color)},
+		texture: {type: 't', value: options.map}
+	};
+	vs= "varying vec2 vUv;void main() {vUv = uv;gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );}";
+	fs= "uniform vec3 color;uniform sampler2D texture;varying vec2 vUv;void main() {vec4 tColor = texture2D( texture, vUv );gl_FragColor = vec4( mix( color, tColor.rgb, tColor.a ), 1.0 );}";
+	return new THREE.ShaderMaterial({uniforms: u, vertexShader: vs, fragmentShader: fs});
+}
 function createSprite(posX, posY, sizeX, sizeY, image)
 {
 	var square= new THREE.PlaneGeometry(1, 1);
 	square.translate(0.5, 0.5, 0);
 	if(typeof image==="number")
 	{
-		var material= new THREE.MeshBasicMaterial({color: image, side: THREE.BackSide});
+		var material= BasicMaterial({color: image});
 	}
 	else if(typeof image==="string")
 	{
 		var texture=new THREE.TextureLoader().load(image);
 		texture.flipY= false;
-		var material= new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide});
+		var material= BasicMaterial({map: texture});
 	}
 	else
 	{
-		var material= image;
+		material= image;
 	}
 	var mesh= new THREE.Mesh(square, material);
 	mesh.scale.set(sizeX, sizeY, 1);
@@ -92,7 +106,7 @@ function Tilesheet(path, size, cb)
 				ctx.drawImage(i, x*16, y*16, 16, 16, 0, 0, 16, 16);
 				var t= new THREE.CanvasTexture(c);
 				t.flipY= false;
-				tiles.push(new THREE.MeshBasicMaterial({map: t, side: THREE.BackSide}));
+				tiles.push(BasicMaterial({map: t}));
 			}
 		}
 		tiles.x= size.x;
@@ -135,12 +149,11 @@ function main()
 			controls.insertBefore(selector_renderer.domElement, controls.childNodes[0]);
 			controls.style.display= "inline-block";
 			var selector_camera= new THREE.OrthographicCamera(0, tiles.x*16+4, 0, tiles.y*16+4, 1, 1000);
-			selector_camera.position.z= 2;
+			selector_camera.position.z= 1;
 			selector_scene.add(selector_camera);
-			let t= new THREE.TextureLoader().load(path);
-			t.flipY= false;
-			var selector_picker= createSprite(2, 2, 16*tiles.x, 16*tiles.y, new THREE.MeshBasicMaterial({side: THREE.BackSide, map: t}));
+			var selector_picker= createSprite(2, 2, 16*tiles.x, 16*tiles.y, path);
 			var selector_indicator= createSprite(0, 0, 18, 18, "selector.png");
+//			selector_indicator.position.z= 0;
 			selector_scene.add(selector_picker);
 			selector_scene.add(selector_indicator);
 			var selector= new THREE.Vector2(0, 0);
