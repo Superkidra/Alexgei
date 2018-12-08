@@ -125,7 +125,7 @@ function main()
 			let form= document.getElementById("tilesheet");
 			form.parentNode.removeChild(form);
 			var selector_scene= new THREE.Scene();
-			var selector_renderer= new THREE.WebGLRenderer()
+			var selector_renderer= new THREE.WebGLRenderer({alpha: true});
 			selector_renderer.domElement.style.width= (16*tiles.x).toString()+'px';
 			selector_renderer.domElement.style.height= (16*tiles.y).toString()+'px';
 			selector_renderer.domElement.width= 16*tiles.x;
@@ -134,21 +134,25 @@ function main()
 			let controls= document.getElementById("controls");
 			controls.insertBefore(selector_renderer.domElement, controls.childNodes[0]);
 			controls.style.display= "inline-block";
-			var selector_camera= new THREE.OrthographicCamera(0, 256, 0, 256, 1, 1000);
+			var selector_camera= new THREE.OrthographicCamera(0, tiles.x*16+4, 0, tiles.y*16+4, 1, 1000);
 			selector_camera.position.z= 1;
 			selector_scene.add(selector_camera);
 			let t= new THREE.TextureLoader().load(path);
 			t.flipY= false;
-			var selector_picker= createSprite(0, 0, 16*tiles.x, 16*tiles.y, new THREE.MeshBasicMaterial({side: THREE.BackSide, map: t}));
+			var selector_picker= createSprite(2, 2, 16*tiles.x, 16*tiles.y, new THREE.MeshBasicMaterial({side: THREE.BackSide, map: t}));
+			var selector_indicator= createSprite(0, 0, 18, 18, "selector.png");
 			selector_scene.add(selector_picker);
+			selector_scene.add(selector_indicator);
 			var selector= new THREE.Vector2(0, 0);
 			var selected_tile= 0;
 			selector_renderer.domElement.addEventListener("mousemove", function(e)
 			{
-				selector.set(Math.floor(e.offsetX/16), Math.floor(e.offsetY/16));
+				selector.set(Math.floor((e.offsetX+2)/16), Math.floor((e.offsetY+2)/16));
 			});
-			selector_renderer.domElement.addEventListener("click", function()
+			selector_renderer.domElement.addEventListener("click", function(e)
 			{
+				selector.set(Math.floor((e.offsetX+2)/16), Math.floor((e.offsetY+2)/16));
+				selector_indicator.position.set(selector.x*16, selector.y*16, 0);
 				selected_tile= (tiles.x*selector.y)+selector.x;
 			});
 			var current_color= 0xFFFFFF;
