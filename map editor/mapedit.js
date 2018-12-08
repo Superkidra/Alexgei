@@ -135,7 +135,7 @@ function main()
 			controls.insertBefore(selector_renderer.domElement, controls.childNodes[0]);
 			controls.style.display= "inline-block";
 			var selector_camera= new THREE.OrthographicCamera(0, tiles.x*16+4, 0, tiles.y*16+4, 1, 1000);
-			selector_camera.position.z= 1;
+			selector_camera.position.z= 2;
 			selector_scene.add(selector_camera);
 			let t= new THREE.TextureLoader().load(path);
 			t.flipY= false;
