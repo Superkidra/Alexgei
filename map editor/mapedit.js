@@ -42,19 +42,20 @@ function createSprite(posX, posY, sizeX, sizeY, image)
 	square.translate(0.5, 0.5, 0);
 	if(typeof image==="number")
 	{
-		var material= new THREE.MeshBasicMaterial({color: image, side: THREE.BackSide});
+		var material= new THREE.SpriteMaterial({color: image, side: THREE.BackSide});
 	}
 	else if(typeof image==="string")
 	{
 		var texture=new THREE.TextureLoader().load(image);
 		texture.flipY= false;
-		var material= new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide});
+		var material= new THREE.SpriteMaterial({map: texture, side: THREE.BackSide});
 	}
 	else
 	{
 		var material= image;
 	}
-	var mesh= new THREE.Mesh(square, material);
+	var mesh= new THREE.Sprite(material);
+	mesh.center.set(0, 0);
 	mesh.scale.set(sizeX, sizeY, 1);
 	mesh.position.set(posX, posY, 0);
 	return mesh;
@@ -92,7 +93,7 @@ function Tilesheet(path, size, cb)
 				ctx.drawImage(i, x*16, y*16, 16, 16, 0, 0, 16, 16);
 				var t= new THREE.CanvasTexture(c);
 				t.flipY= false;
-				tiles.push(new THREE.MeshBasicMaterial({map: t, side: THREE.BackSide}));
+				tiles.push(new THREE.SpriteMaterial({map: t, side: THREE.BackSide}));
 			}
 		}
 		tiles.x= size.x;
@@ -139,7 +140,7 @@ function main()
 			selector_scene.add(selector_camera);
 			let t= new THREE.TextureLoader().load(path);
 			t.flipY= false;
-			var selector_picker= createSprite(2, 2, 16*tiles.x, 16*tiles.y, new THREE.MeshBasicMaterial({side: THREE.BackSide, map: t}));
+			var selector_picker= createSprite(2, 2, 16*tiles.x, 16*tiles.y, new THREE.SpriteMaterial({side: THREE.BackSide, map: t}));
 			var selector_indicator= createSprite(0, 0, 18, 18, "selector.png");
 			selector_scene.add(selector_picker);
 			selector_scene.add(selector_indicator);
