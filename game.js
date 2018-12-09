@@ -51,19 +51,19 @@ function createSprite(posX, posY, sizeX, sizeY, image)
 	square.translate(0.5, 0.5, 0);
 	if(typeof image==="number")
 	{
-		var material= new THREE.MeshBasicMaterial({color: image, side: THREE.BackSide});
+		var material= new THREE.SpriteMaterial({color: image, side: THREE.BackSide});
 	}
 	else if(typeof image==="string")
 	{
 		var texture=new THREE.TextureLoader().load(image);
 		texture.flipY= false;
-		var material= new THREE.MeshBasicMaterial({map: texture, side: THREE.BackSide});
+		var material= new THREE.SpriteMaterial({map: texture, side: THREE.BackSide});
 	}
 	else
 	{
 		var material= image;
 	}
-	var mesh= new THREE.Mesh(square, material);
+	var mesh= new THREE.Sprite(square, material);
 	mesh.scale.set(sizeX, sizeY, 1);
 	mesh.position.set(posX, posY, 0);
 	return mesh;
@@ -101,7 +101,7 @@ function Tilesheet(path, size, cb)
 				ctx.drawImage(i, x*16, y*16, 16, 16, 0, 0, 16, 16);
 				var t= new THREE.CanvasTexture(c);
 				t.flipY= false;
-				tiles.push(new THREE.MeshBasicMaterial({map: t, side: THREE.BackSide}));
+				tiles.push(new THREE.SpriteMaterial({map: t, side: THREE.BackSide}));
 			}
 		}
 		tiles.x= size.x;
