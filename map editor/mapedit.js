@@ -174,14 +174,16 @@ function main()
 			map_renderer.domElement.width= map_renderer.domElement.clientWidth;
 			map_renderer.domElement.height= map_renderer.domElement.clientHeight;
 			map_renderer.setSize(map_renderer.domElement.width, map_renderer.domElement.height)
-			var map_camera= new THREE.OrthographicCamera(0, 640, 0, 480, 1, 1000);
+			targetWidth= 960;
+			targetHeight= 640;
+			var map_camera= new THREE.OrthographicCamera(0, targetWidth, 0, targetHeight, 1, 1000);
 			map_camera.position.z = 1;
 			map_scene.add(map_camera);
 			var mouse= new THREE.Vector2();
 			mouse.down= false;
 			map_renderer.domElement.addEventListener("mousemove", function(e)
 			{
-				mouse.set(Math.floor((e.offsetX/map_renderer.domElement.width)*640), Math.floor((e.offsetY/map_renderer.domElement.height)*480));
+				mouse.set(Math.floor((e.offsetX/map_renderer.domElement.width)*targetWidth), Math.floor((e.offsetY/map_renderer.domElement.height)*targetHeight));
 				if(mouse.down)
 				{
 					var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
@@ -302,11 +304,12 @@ function main()
 				var map_buffer= new ArrayBuffer(totalsize);
 				var map= new DataView(map_buffer);
 				let current_byte= 0;
-				for(let y=0; y<40; y++)
+				for(let y=0; y<(targetHeight/16); y++)
 				{
-					for(let x=0; x<30; x++)
+					for(let x=0; x<(targetHeight/16); x++)
 					{
-						let o= map_scene.getObjectByProperty("positon", new THREE.Vector3(x*16, y*16, 0));
+						let o= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(x*16, y*16, 0))})[0];
+						if(!o) o={userData:{tile:0}, material: {color: {r: 0xFF, g: 0xFF, b: 0xFF}}};
 						map.setUint16(current_byte, o.userData.tile, true);
 						current_byte+= 2;
 						map.setUint8(current_byte, o.material.color.r);
