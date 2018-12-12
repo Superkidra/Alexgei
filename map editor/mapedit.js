@@ -111,6 +111,22 @@ Point.prototype.toString= function()
 {
 	return '('+this.x.toString()+", "+this.y.toString()+')';
 }
+function PartialImage(path, sx, sy, w, h, cb)
+{
+	var i= new Image();
+	i.onload = function()
+	{
+		var c = document.createElement("canvas");
+		c.width = w;
+		c.height = h;
+		var ctx = c.getContext("2d");
+		ctx.drawImage(i, sx, sy, w, h, 0, 0, w, h);
+		var t = new THREE.CanvasTexture(c);
+		t.flipY = false;
+		cb(new THREE.SpriteMaterial({ map: t, side: THREE.BackSide }));
+	}
+	i.src = path;
+}
 function main()
 {
 	var fr= new FileReader();
@@ -138,58 +154,110 @@ function main()
 			var selector_camera= new THREE.OrthographicCamera(0, tiles.x*16+4, 0, tiles.y*16+4, 1, 1000);
 			selector_camera.position.z= 1;
 			selector_scene.add(selector_camera);
-			let t= new THREE.TextureLoader().load(path);
-			t.flipY= false;
-			var selector_picker= createSprite(2, 2, 16*tiles.x, 16*tiles.y, new THREE.SpriteMaterial({side: THREE.BackSide, map: t}));
-			var selector_indicator= createSprite(0, 0, 18, 18, "selector.png");
-			selector_scene.add(selector_picker);
-			selector_scene.add(selector_indicator);
-			var selector= new THREE.Vector2(0, 0);
-			var selected_tile= 0;
-			selector_renderer.domElement.addEventListener("mousemove", function(e)
+			PartialImage(path, 0, 0, 16 * tiles.x, 16 * tiles.y, function(t)
 			{
-				selector.set(Math.floor((e.offsetX+2)/16), Math.floor((e.offsetY+2)/16));
-			});
-			selector_renderer.domElement.addEventListener("click", function(e)
-			{
-				selector.set(Math.floor((e.offsetX+2)/16), Math.floor((e.offsetY+2)/16));
-				selector_indicator.position.set(selector.x*16, selector.y*16, 0);
-				selected_tile= (tiles.x*selector.y)+selector.x;
-			});
-			var current_color= 0xFFFFFF;
-			var color_selector= document.getElementById("color_selector");
-			color_selector.onchange= function(e)
-			{
-				current_color= parseInt(color_selector.value.replace('#', "0x"));
-				selector_picker.material.color.set(current_color);
-			}
-			var triggers= {};
-			var npcs= {};
-			var items= {};
-			map_scene= new THREE.Scene();
-			var map_renderer= new THREE.WebGLRenderer();
-			map_renderer.domElement= document.body.appendChild(map_renderer.domElement);
-			map_renderer.domElement.style.display= "inline-block";
-			map_renderer.domElement.style["flex-grow"]= 1;
-			map_renderer.domElement.width= map_renderer.domElement.clientWidth;
-			map_renderer.domElement.height= map_renderer.domElement.clientHeight;
-			map_renderer.setSize(map_renderer.domElement.width, map_renderer.domElement.height)
-			targetWidth= 960;
-			targetHeight= 640;
-			var map_camera= new THREE.OrthographicCamera(0, targetWidth, 0, targetHeight, 1, 1000);
-			map_camera.position.z = 1;
-			map_scene.add(map_camera);
-			var mouse= new THREE.Vector2();
-			mouse.down= false;
-			map_renderer.domElement.addEventListener("mousemove", function(e)
-			{
-				mouse.set(Math.floor((e.offsetX/map_renderer.domElement.width)*targetWidth), Math.floor((e.offsetY/map_renderer.domElement.height)*targetHeight));
-				if(mouse.down)
+				var selector_picker= createSprite(2, 2, 16*tiles.x, 16*tiles.y, t);
+				var selector_indicator= createSprite(0, 0, 18, 18, "selector.png");
+				selector_scene.add(selector_picker);
+				selector_scene.add(selector_indicator);
+				var selector= new THREE.Vector2(0, 0);
+				var selected_tile= 0;
+				selector_renderer.domElement.addEventListener("mousemove", function(e)
 				{
-					var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
+					selector.set(Math.floor((e.offsetX+2)/16), Math.floor((e.offsetY+2)/16));
+				});
+				selector_renderer.domElement.addEventListener("click", function(e)
+				{
+					selector.set(Math.floor((e.offsetX+2)/16), Math.floor((e.offsetY+2)/16));
+					selector_indicator.position.set(selector.x*16, selector.y*16, 0);
+					selected_tile= (tiles.x*selector.y)+selector.x;
+				});
+				var current_color= 0xFFFFFF;
+				var color_selector= document.getElementById("color_selector");
+				color_selector.onchange= function(e)
+				{
+					current_color= parseInt(color_selector.value.replace('#', "0x"));
+					selector_picker.material.color.set(current_color);
+				}
+				var triggers= {};
+				var npcs= {};
+				var items= {};
+				map_scene= new THREE.Scene();
+				var map_renderer= new THREE.WebGLRenderer();
+				map_renderer.domElement= document.body.appendChild(map_renderer.domElement);
+				map_renderer.domElement.style.display= "inline-block";
+				map_renderer.domElement.style["flex-grow"]= 1;
+				map_renderer.domElement.width= map_renderer.domElement.clientWidth;
+				map_renderer.domElement.height= map_renderer.domElement.clientHeight;
+				map_renderer.setSize(map_renderer.domElement.width, map_renderer.domElement.height)
+				targetWidth= 960;
+				targetHeight= 640;
+				var map_camera= new THREE.OrthographicCamera(0, targetWidth, 0, targetHeight, 1, 1000);
+				map_camera.position.z = 1;
+				map_scene.add(map_camera);
+				var mouse= new THREE.Vector2();
+				mouse.down= false;
+				map_renderer.domElement.addEventListener("mousemove", function(e)
+				{
+					mouse.set(Math.floor((e.offsetX/map_renderer.domElement.width)*targetWidth), Math.floor((e.offsetY/map_renderer.domElement.height)*targetHeight));
+					if(mouse.down)
+					{
+						var b= {x: Math.floor(mouse.x/16), y: Math.floor(mouse.y/16)};
+						if(document.querySelector('input[name="mode"]:checked').value=="edit")
+						{
+						let prev= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(b.x*16, b.y*16, 0))})[0];
+							if(prev)
+							{
+								if(prev.material.name=="dispose") prev.material.dispose();
+								map_scene.remove(prev);
+							}
+							if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
+							else
+							{
+								let t= tiles[selected_tile].clone();
+								t.color.set(current_color);
+								var s= createSprite(b.x*16, b.y*16, 16, 16, t);
+							}
+							s.userData.tile= selected_tile;
+							map_scene.add(s);
+						}
+						else
+						{
+							let v= document.getElementById("value_text").value;
+							let mode= document.querySelector('input[name="mode"]:checked').value;
+							if(mode=="trigger")
+							{
+								if(triggers[b]) triggers[b].push(v);
+								else triggers[b]= [v];
+							}
+							else if(mode=="npc") npcs[b]= v;
+							else if(mode=="item") items[b]= v;
+							else if(mode=="clear")
+							{
+								triggers[b]= undefined;
+								npcs[b]= undefined;
+								items[b]= undefined;
+							}
+							else if(mode=="view")
+							{
+								tv= document.getElementById("tile_view");
+								tv.innerHTML= "<br>Tile: ("+b.x.toString()+", "+b.y.toString()+")<br>"+
+								"NPCs: "+(npcs[b] ? npcs[b].toString() : "None")+"<br>"+
+								"Items: "+(items[b] ? items[b].toString() : "None")+"<br>"+
+								"Triggers: "+(triggers[b] ? triggers[b].toString() : "None")+"<br>";
+							}
+								else console.error("How did we get here");
+						}
+	
+					}
+				});
+				map_renderer.domElement.addEventListener("mousedown", function()
+				{
+					mouse.down= true;
+					var b= new Point(Math.floor(mouse.x/16),  Math.floor(mouse.y/16));
 					if(document.querySelector('input[name="mode"]:checked').value=="edit")
 					{
-					let prev= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(b.x*16, b.y*16, 0))})[0];
+						let prev= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(b.x*16, b.y*16, 0))})[0];
 						if(prev)
 						{
 							if(prev.material.name=="dispose") prev.material.dispose();
@@ -230,150 +298,102 @@ function main()
 							"Items: "+(items[b] ? items[b].toString() : "None")+"<br>"+
 							"Triggers: "+(triggers[b] ? triggers[b].toString() : "None")+"<br>";
 						}
-							else console.error("How did we get here");
+						else console.error("How did we get here");
 					}
-	
-				}
-			});
-			map_renderer.domElement.addEventListener("mousedown", function()
-			{
-				mouse.down= true;
-				var b= new Point(Math.floor(mouse.x/16),  Math.floor(mouse.y/16));
-				if(document.querySelector('input[name="mode"]:checked').value=="edit")
+				});
+				map_renderer.domElement.addEventListener("mouseup", function(){mouse.down= false;});
+				document.getElementById("save_button").addEventListener("click", function()
 				{
-					let prev= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(b.x*16, b.y*16, 0))})[0];
-					if(prev)
+					let totalsize= (targetWidth/16)*(targetHeight/16)*6+6;
+					for(let p in items)
 					{
-						if(prev.material.name=="dispose") prev.material.dispose();
-						map_scene.remove(prev);
+						totalsize+= items[p].length*2+2;
 					}
-					if(current_color==0xFFFFFF) var s= createSprite(b.x*16, b.y*16, 16, 16, tiles[selected_tile]);
-					else
+					for(let p in npcs)
 					{
-						let t= tiles[selected_tile].clone();
-						t.color.set(current_color);
-						var s= createSprite(b.x*16, b.y*16, 16, 16, t);
+						totalsize+= npcs[p].length*2+2;
 					}
-					s.userData.tile= selected_tile;
-					map_scene.add(s);
-				}
-				else
-				{
-					let v= document.getElementById("value_text").value;
-					let mode= document.querySelector('input[name="mode"]:checked').value;
-					if(mode=="trigger")
+					for(let p in triggers)
 					{
-						if(triggers[b]) triggers[b].push(v);
-						else triggers[b]= [v];
+						totalsize+= triggers[p].length*2+2;
 					}
-					else if(mode=="npc") npcs[b]= v;
-					else if(mode=="item") items[b]= v;
-					else if(mode=="clear")
+					var map_buffer= new ArrayBuffer(totalsize);
+					var map= new DataView(map_buffer);
+					let current_byte= 0;
+					for(let y=0; y<(targetHeight/16); y++)
 					{
-						triggers[b]= undefined;
-						npcs[b]= undefined;
-						items[b]= undefined;
+						for(let x=0; x<(targetWidth/16); x++)
+						{
+							let o= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(x*16, y*16, 0))})[0];
+							if(!o) o={userData:{tile:0}, material: {color: {r: 0xFF, g: 0xFF, b: 0xFF}}};
+							map.setUint16(current_byte, o.userData.tile, true);
+							current_byte+= 2;
+							map.setUint8(current_byte, o.material.color.r);
+							current_byte+= 1;
+							map.setUint8(current_byte, o.material.color.g);
+							current_byte+= 1;
+							map.setUint8(current_byte, o.material.color.b);
+							current_byte+= 1;
+						}
 					}
-					else if(mode=="view")
+					for(let p in items)
 					{
-						tv= document.getElementById("tile_view");
-						tv.innerHTML= "<br>Tile: ("+b.x.toString()+", "+b.y.toString()+")<br>"+
-						"NPCs: "+(npcs[b] ? npcs[b].toString() : "None")+"<br>"+
-						"Items: "+(items[b] ? items[b].toString() : "None")+"<br>"+
-						"Triggers: "+(triggers[b] ? triggers[b].toString() : "None")+"<br>";
-					}
-					else console.error("How did we get here");
-				}
-			});
-			map_renderer.domElement.addEventListener("mouseup", function(){mouse.down= false;});
-			document.getElementById("save_button").addEventListener("click", function()
-			{
-				let totalsize= 40*30*6+6;
-				for(let p in items)
-				{
-					totalsize+= items[p].length*2+2;
-				}
-				for(let p in npcs)
-				{
-					totalsize+= npcs[p].length*2+2;
-				}
-				for(let p in triggers)
-				{
-					totalsize+= triggers[p].length*2+2;
-				}
-				var map_buffer= new ArrayBuffer(totalsize);
-				var map= new DataView(map_buffer);
-				let current_byte= 0;
-				for(let y=0; y<(targetHeight/16); y++)
-				{
-					for(let x=0; x<(targetHeight/16); x++)
-					{
-						let o= map_scene.children.filter(function(o){return o.position.equals(new THREE.Vector3(x*16, y*16, 0))})[0];
-						if(!o) o={userData:{tile:0}, material: {color: {r: 0xFF, g: 0xFF, b: 0xFF}}};
-						map.setUint16(current_byte, o.userData.tile, true);
-						current_byte+= 2;
-						map.setUint8(current_byte, o.material.color.r);
+						map.setUint8(current_byte, p.x);
 						current_byte+= 1;
-						map.setUint8(current_byte, o.material.color.g);
+						map.setUint8(current_byte, p.y);
 						current_byte+= 1;
-						map.setUint8(current_byte, o.material.color.b);
+						for(let i=0; i<items[p].length; i++)
+						{
+							map.setUint16(current_byte, items[p].charCodeAt(i));
+							current_byte+= 2;
+						}
+					}
+					map.setUint16(current_byte, 0);
+					current_byte+= 2;
+					for(let p in npcs)
+					{
+						map.setUint8(current_byte, p.x);
 						current_byte+= 1;
+						map.setUint8(current_byte, p.y);
+						current_byte+= 1;
+						for(let i=0; i<npcs[p].length; i++)
+						{
+							map.setUint16(current_byte, npcs[p].charCodeAt(i));
+							current_byte+= 2;
+						}
 					}
-				}
-				for(let p in items)
-				{
-					map.setUint8(current_byte, p.x);
-					current_byte+= 1;
-					map.setUint8(current_byte, p.y);
-					current_byte+= 1;
-					for(let i=0; i<items[p].length; i++)
+					map.setUint16(current_byte, 0);
+					current_byte+= 2;
+					for(let p in triggers)
 					{
-						map.setUint16(current_byte, items[p].charCodeAt(i));
-						current_byte+= 2;
+						map.setUint8(current_byte, p.x);
+						current_byte+= 1;
+						map.setUint8(current_byte, p.y);
+						current_byte+= 1;
+						for(let i=0; i<triggers[p].length; i++)
+						{
+							map.setUint16(current_byte, triggers[p].charCodeAt(i));
+							current_byte+= 2;
+						}
 					}
-				}
-				map.setUint16(current_byte, 0);
-				current_byte+= 2;
-				for(let p in npcs)
+					let map_blob= new Blob([map_buffer]);
+					let map_url= URL.createObjectURL(map_blob);
+					let downloader = document.createElement("a");
+					downloader.hidden = true;
+					document.body.appendChild(downloader)
+					downloader.href = map_url;
+					downloader.download = "new.map";
+					downloader.click();
+				});
+				function render()
 				{
-					map.setUint8(current_byte, p.x);
-					current_byte+= 1;
-					map.setUint8(current_byte, p.y);
-					current_byte+= 1;
-					for(let i=0; i<npcs[p].length; i++)
-					{
-						map.setUint16(current_byte, npcs[p].charCodeAt(i));
-						current_byte+= 2;
-					}
+					//Main loop
+					map_renderer.render(map_scene, map_camera);
+					selector_renderer.render(selector_scene, selector_camera)
+					requestAnimationFrame(render);
 				}
-				map.setUint16(current_byte, 0);
-				current_byte+= 2;
-				for(let p in triggers)
-				{
-					map.setUint8(current_byte, p.x);
-					current_byte+= 1;
-					map.setUint8(current_byte, p.y);
-					current_byte+= 1;
-					for(let i=0; i<triggers[p].length; i++)
-					{
-						map.setUint16(current_byte, triggers[p].charCodeAt(i));
-						current_byte+= 2;
-					}
-				}
-				let map_blob= new Blob(map_buffer);
-				let map_url= URL.createObjectURL(map_blob);
-				let downloader= document.createElement("a");
-				downloader.href= map_url;
-				downloader.click();
+				render();
 			});
-			function render()
-			{
-				//Main loop
-				map_renderer.render(map_scene, map_camera);
-				selector_renderer.render(selector_scene, selector_camera)
-				requestAnimationFrame(render);
-			}
-			render();
 		});
 	}
 	fr.readAsDataURL(document.getElementById("tilesheet_file").files[0]);
