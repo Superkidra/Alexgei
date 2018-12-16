@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -16,7 +16,7 @@
 		<button onclick="main()">Submit</button>
 	</div>
 	<div id="controls" hidden>
-		<br>Color: <input type="color" value="#FFFFFF" id="color_selector"> <button onclick="document.getElementById('color_selector').value='#FFFFFF';">Clear color</button><br>
+		<br>Color: <input type="color" value="#FFFFFF" id="color_selector"> <button onclick="let cs = document.getElementById('color_selector'); cs.value = '#FFFFFF'; cs.onchange();">Clear color</button><br>
 		<b>Mode: </b><br>
 			[ Tile Editor <input name="mode" type="radio" value="edit" checked> ] <br>
 			[ NPC Placer <input name="mode" type="radio" value="npc"> ] <br>
