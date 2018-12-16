@@ -329,6 +329,18 @@ function map_editor(tiles, prev_map_db)
 				}
 			}
 		}
+		else
+		{
+			for (let y = 0; y < (targetHeight / 16) ; y++)
+			{
+				for (let x = 0; x < (targetWidth / 16) ; x++)
+				{
+					let o= createSprite(x*16, y*16, 16, 16, tiles[0]);
+					map_scene.add(o);
+				}
+			}
+
+		}
 		document.getElementById("save_button").addEventListener("click", function ()
 		{
 			let totalsize = (targetWidth / 16) * (targetHeight / 16) * 6 + 6;
