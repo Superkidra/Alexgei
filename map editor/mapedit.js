@@ -314,7 +314,7 @@ function map_editor(tiles, prev_map_db)
 					current_byte += 1;
 					let b= prev_map.getUint8(current_byte);
 					current_byte += 1;
-					let color= RGB_little_endian(r, g, b);
+					let color= RGB_little_endian(b, g, r);
 					let m= tiles[tile];
 					if(color!=0xFFFFFF)
 					{
